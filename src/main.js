@@ -1,3 +1,13 @@
+  function setHealthUI(){
+    const el = document.getElementById('health-fill');
+    if (!el) return;
+    const w = Math.max(0, Math.min(100, health));
+    el.style.width = w + '%';
+    // simple color shift: green -> red
+    if (w > 60) el.style.background = 'linear-gradient(90deg, #22c55e, #84cc16)';
+    else if (w > 30) el.style.background = 'linear-gradient(90deg, #f59e0b, #eab308)';
+    else el.style.background = 'linear-gradient(90deg, #ef4444, #f43f5e)';
+  }
 // Main game bootstrap
 (function(){
   const canvas = document.getElementById('game-canvas');
@@ -34,7 +44,7 @@
   }
 
   const lanes = [-6.7, 0, 6.7];
-  const boundsX = 9.2;
+  let boundsX = 14.0; // widened to allow sidewalk driving
   // World turning
   let turnTargetY = 0;
   let turning = false;
@@ -86,6 +96,7 @@
   let fpsSMA = 60;
   let postSpawnTimer = -1; // spawn extra wave after restart
   let grace = 0; // collision grace period after restart
+  let health = 100; // car health
 
   UI.setBest(best);
   UI.syncSettings();
@@ -128,6 +139,7 @@
     running = true; paused = false; AudioMgr.playMusic();
     UI.showControls();
     grace = 2.0; // 2s invulnerability
+    health = 100; setHealthUI();
     // spawn an initial wave so the road isn't empty after restart
     // Force 2 police and 3 regular cars spaced out
     spawnEnemy(0, true);
@@ -196,7 +208,7 @@
       spawnInterval = Math.max(0.45, spawnInterval - dt*0.06);
 
       road.update(speed*dt);
-      scenery.update(speed, dt);
+      scenery.update(speed, dt, player.mesh.position.x, player.mesh.position.z);
       enemies.update(dt);
       player.update(dt);
 
@@ -206,8 +218,8 @@
         if (Math.abs(world.rotation.y - turnTargetY) < 0.01){ world.rotation.y = turnTargetY; turning=false; }
       }
 
-      // Clamp player to road
-      player.setX(Utils.clamp(player.mesh.position.x, -9.2, 9.2));
+      // Clamp player to widened road
+      player.setX(Utils.clamp(player.mesh.position.x, -boundsX, boundsX));
 
       // Keyboard + mobile button movement
       const kx = (keys.left?-1:0) + (keys.right?1:0) + (ctl.left?-1:0) + (ctl.right?1:0);
@@ -241,7 +253,26 @@
 
       // Collisions (disabled during grace period)
       if (grace<=0) {
-        enemies.each(e=>{ if (e.bbox.intersectsBox(player.bounds())){ gameOver(); } });
+        enemies.each(e=>{
+          if (e.bbox.intersectsBox(player.bounds())){
+            // Apply damage
+            const base = e.police ? 25 : 12;
+            const sev = Math.min(1, speed/60);
+            health -= Math.round(base + sev*15);
+            setHealthUI();
+            // Push physics on enemy
+            const dx = e.mesh.position.x - player.mesh.position.x;
+            const dz = e.mesh.position.z - player.mesh.position.z;
+            const inv = Math.max(0.001, Math.hypot(dx,dz));
+            const ux = dx/inv, uz = dz/inv;
+            e.pushVX = (e.pushVX||0) + ux * 18; // lateral push
+            e.pushVZ = (e.pushVZ||0) + uz * 22; // forward push
+            // Light recoil on player
+            player.setX(player.mesh.position.x - ux * 0.6);
+            // Arrest/game over on zero health
+            if (health <= 0){ gameOver(); }
+          }
+        });
       }
     }
 

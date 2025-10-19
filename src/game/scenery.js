@@ -3,6 +3,7 @@ window.Scenery = function(parent){
   const group = new THREE.Group(); parent.add(group);
   const items = [];
   const lenZ = 160;
+  const pedestrians = [];
 
   // Materials
   const grassMat = new THREE.MeshLambertMaterial({ color: 0x0a3a1a });
@@ -42,6 +43,16 @@ window.Scenery = function(parent){
     const t2 = makeTree(); t2.position.set(18-Math.random()*6,0,Math.random()*lenZ); group.add(t2); items.push({m:t2,type:'tree'});
   }
 
+  // Pedestrians (billboard cubes) along sidewalks
+  function spawnPed(xSide){
+    const ped = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.9,0.2), new THREE.MeshLambertMaterial({ color: 0xf1c40f })); body.position.y=0.45; ped.add(body);
+    ped.position.set(xSide<0?-17.2:17.2,0,Math.random()*lenZ);
+    ped.userData = { vx:0, vz:0 };
+    group.add(ped); pedestrians.push(ped);
+  }
+  for (let i=0;i<10;i++){ spawnPed(i%2===0?-1:1); }
+
   // Playground: swing with kids
   function makeSwingSet(){
     const swing = new THREE.Group();
@@ -64,7 +75,7 @@ window.Scenery = function(parent){
     group.add(s); items.push({m:s,type:'swing'});
   }
 
-  function update(speed, dt){
+  function update(speed, dt, playerX=9999, playerZ=9999){
     // Move all scenery backwards to simulate forward motion.
     group.position.z -= speed*dt;
     if (group.position.z < -lenZ){ group.position.z += lenZ; }
@@ -74,6 +85,27 @@ window.Scenery = function(parent){
         const rp = it.m.userData.ropePivot; if (!rp) continue;
         it.m.userData.t += dt; rp.rotation.z = Math.sin(it.m.userData.t*1.2)*0.3;
       }
+    }
+    // Pedestrian reactions: run away if player close
+    for (const ped of pedestrians){
+      const px = playerX, pz = playerZ;
+      const dx = (ped.position.x + group.position.x) - px;
+      const dz = (ped.position.z + group.position.z) - pz;
+      const dist2 = dx*dx + dz*dz;
+      if (dist2 < 64){ // within 8 units
+        const inv = Math.max(0.001, Math.sqrt(dist2));
+        const ux = dx/inv, uz = dz/inv;
+        ped.userData.vx += ux * 6 * dt;
+        ped.userData.vz += uz * 6 * dt;
+      }
+      // move and damp
+      ped.position.x += ped.userData.vx * dt;
+      ped.position.z += ped.userData.vz * dt;
+      ped.userData.vx *= 0.94; ped.userData.vz *= 0.94;
+      // keep on sidewalks range
+      ped.position.x = THREE.MathUtils.clamp(ped.position.x, -19, 19);
+      if (ped.position.z < -5) ped.position.z += lenZ;
+      if (ped.position.z > lenZ+5) ped.position.z -= lenZ;
     }
   }
   function reset(){ group.position.z = 0; }
