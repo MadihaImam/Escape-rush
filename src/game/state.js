@@ -9,7 +9,8 @@ window.GameState = (function(){
     skin: 'red',
     sensitivity: 1.0,
     showFps: false,
-    invertSteer: true
+    invertSteer: true,
+    themeIndex: 0
   };
   function load(){
     try { return { ...defaults, ...(JSON.parse(localStorage.getItem(KEY))||{}) }; }

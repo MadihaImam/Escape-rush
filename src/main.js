@@ -28,6 +28,10 @@
   const enemies = new EnemyPool(world, ()=>player.mesh.position.x, ()=>score);
   let player = new Player(world, GameState.state.skin);
   const scenery = new Scenery(world);
+  // Apply persisted theme at boot
+  if (typeof GameState.state.themeIndex === 'number') {
+    scenery.setThemeIndex(GameState.state.themeIndex);
+  }
 
   const lanes = [-6.7, 0, 6.7];
   const boundsX = 9.2;
@@ -100,6 +104,8 @@
   });
   UI.toggleMusic.addEventListener('change', (e)=>{ GameState.set('music', e.target.checked); if(e.target.checked) AudioMgr.playMusic(); else AudioMgr.stopMusic(); });
   UI.toggleSfx.addEventListener('change', (e)=>{ GameState.set('sfx', e.target.checked); });
+  if (UI.toggleInvert) UI.toggleInvert.addEventListener('change', (e)=>{ GameState.set('invertSteer', e.target.checked); });
+  if (UI.selectTheme) UI.selectTheme.addEventListener('change', (e)=>{ const i = parseInt(e.target.value||'0',10)||0; GameState.set('themeIndex', i); scenery.setThemeIndex(i); });
   UI.toggleFps.addEventListener('change', (e)=>{ GameState.set('showFps', e.target.checked); UI.setFpsVisible(e.target.checked); });
   UI.rangeSens.addEventListener('input', (e)=>{ const v = parseFloat(e.target.value||'1'); GameState.set('sensitivity', v); });
   UI.btn.settingsBack.addEventListener('click', ()=>{ UI.hide(UI.overlays.settings); UI.show(UI.overlays.main); AudioMgr.click(); });

@@ -6,7 +6,7 @@
   <title>Escape Rush — Web</title>
   <meta name="theme-color" content="#0b0f14" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <div id="game-root">
@@ -73,6 +73,15 @@
           <input type="checkbox" id="toggle-invert" />
           <span>Invert Steering</span>
         </label>
+        <div class="slider">
+          <label for="select-theme">Background Theme</label>
+          <select id="select-theme">
+            <option value="0">Urban</option>
+            <option value="1">Park</option>
+            <option value="2">Residential</option>
+            <option value="3">Downtown</option>
+          </select>
+        </div>
         <label class="toggle">
           <input type="checkbox" id="toggle-fps" />
           <span>Show FPS</span>
@@ -113,19 +122,19 @@
   </div>
 
   <!-- Three.js CDN -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js?v=4"></script>
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js?v=5"></script>
   <!-- Game scripts -->
-  <script src="src/game/utils.js?v=4"></script>
-  <script src="src/game/state.js?v=4"></script>
-  <script src="src/game/audio.js?v=4"></script>
-  <script src="src/game/monetization.js?v=4"></script>
-  <script src="src/game/road.js?v=4"></script>
-  <script src="src/game/player.js?v=4"></script>
-  <script src="src/game/models.js?v=4"></script>
-  <script src="src/game/enemy.js?v=4"></script>
-  <script src="src/game/scenery.js?v=4"></script>
-  <script src="src/game/ui.js?v=4"></script>
-  <script src="src/main.js?v=4"></script>
+  <script src="src/game/utils.js?v=5"></script>
+  <script src="src/game/state.js?v=5"></script>
+  <script src="src/game/audio.js?v=5"></script>
+  <script src="src/game/monetization.js?v=5"></script>
+  <script src="src/game/road.js?v=5"></script>
+  <script src="src/game/player.js?v=5"></script>
+  <script src="src/game/models.js?v=5"></script>
+  <script src="src/game/enemy.js?v=5"></script>
+  <script src="src/game/scenery.js?v=5"></script>
+  <script src="src/game/ui.js?v=5"></script>
+  <script src="src/main.js?v=5"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
