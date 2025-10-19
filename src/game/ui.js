@@ -20,12 +20,14 @@ window.UI = (function(){
   const finalScore = $('final-score');
   const toggleMusic = $('toggle-music');
   const toggleSfx = $('toggle-sfx');
+  const toggleInvert = $('toggle-invert');
   const toggleFps = $('toggle-fps');
   const rangeSens = $('range-sens');
 
   function syncSettings(){
     toggleMusic.checked = !!GameState.state.music;
     toggleSfx.checked = !!GameState.state.sfx;
+    if (toggleInvert) toggleInvert.checked = !!GameState.state.invertSteer;
     toggleFps.checked = !!GameState.state.showFps;
     rangeSens.value = GameState.state.sensitivity || 1.0;
     setFpsVisible(!!GameState.state.showFps);
@@ -49,6 +51,9 @@ window.UI = (function(){
 
   function showControls(){ mobileControls.classList.remove('hidden'); }
   function hideControls(){ mobileControls.classList.add('hidden'); }
+  // Force style in case of stale CSS caching on some devices
+  function showControls(){ mobileControls.classList.remove('hidden'); mobileControls.style.display='flex'; }
+  function hideControls(){ mobileControls.classList.add('hidden'); mobileControls.style.display='none'; }
 
-  return { $, show, hide, overlays, btn, setScore, setBest, setFinal, setFps, setFpsVisible, getSensitivity, toggleMusic, toggleSfx, toggleFps, rangeSens, syncSettings, hudFps, ctl, showControls, hideControls };
+  return { $, show, hide, overlays, btn, setScore, setBest, setFinal, setFps, setFpsVisible, getSensitivity, toggleMusic, toggleSfx, toggleInvert, toggleFps, rangeSens, syncSettings, hudFps, ctl, showControls, hideControls };
 })();

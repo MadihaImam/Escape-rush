@@ -44,7 +44,8 @@
   // Input handling: drag/swipe
   let dragging=false, lastX=0;
   function onPointerDown(e){ dragging=true; lastX = e.clientX || (e.touches?e.touches[0].clientX:0); AudioMgr.resume(); }
-  function onPointerMove(e){ if(!dragging) return; const cx = e.clientX || (e.touches?e.touches[0].clientX:0); const dx = (cx-lastX); lastX=cx; player.setSpeedX(dx*0.03*UI.getSensitivity()); }
+  function steerSign(){ return GameState.state.invertSteer ? -1 : 1; }
+  function onPointerMove(e){ if(!dragging) return; const cx = e.clientX || (e.touches?e.touches[0].clientX:0); const dx = (cx-lastX); lastX=cx; player.setSpeedX(dx*0.03*UI.getSensitivity()*steerSign()); }
   function onPointerUp(){ dragging=false; player.setSpeedX(0); }
   window.addEventListener('mousedown', onPointerDown);
   window.addEventListener('mousemove', onPointerMove);
@@ -80,6 +81,7 @@
   let spawnInterval = 1.2;
   let fpsSMA = 60;
   let postSpawnTimer = -1; // spawn extra wave after restart
+  let grace = 0; // collision grace period after restart
 
   UI.setBest(best);
   UI.syncSettings();
@@ -119,6 +121,7 @@
     scenery.reset();
     running = true; paused = false; AudioMgr.playMusic();
     UI.showControls();
+    grace = 2.0; // 2s invulnerability
     // spawn an initial wave so the road isn't empty after restart
     // Force 2 police and 3 regular cars spaced out
     spawnEnemy(0, true);
@@ -139,7 +142,7 @@
   // Spawn enemies on lanes
   function spawnEnemy(zOffset=0, forcePolice=false){
     const lane = lanes[Math.floor(Math.random()*lanes.length)];
-    const zStart = player.getZ() + 80 + zOffset;
+    const zStart = player.getZ() + 110 + zOffset; // further away to avoid instant overlaps
     const eSpeed = speed * Utils.randRange(0.9, 1.2);
     enemies.spawn(zStart, lane, eSpeed, forcePolice);
   }
@@ -202,7 +205,7 @@
 
       // Keyboard + mobile button movement
       const kx = (keys.left?-1:0) + (keys.right?1:0) + (ctl.left?-1:0) + (ctl.right?1:0);
-      if (kx !== 0) player.setSpeedX(10*kx*UI.getSensitivity()); else if(!dragging) player.setSpeedX(0);
+      if (kx !== 0) player.setSpeedX(10*kx*UI.getSensitivity()*steerSign()); else if(!dragging) player.setSpeedX(0);
 
       // Drift toggle
       player.setDrift(!!ctl.drift);
@@ -220,6 +223,7 @@
       // Scoring
       score += dt * speed * 0.5;
       UI.setScore(score);
+      if (grace>0) { grace -= dt; }
 
       // Spawning
       spawnTimer -= dt; if (spawnTimer<=0){ spawnEnemy(); spawnTimer = spawnInterval; }
@@ -229,8 +233,10 @@
         postSpawnTimer = -1;
       }}
 
-      // Collisions
-      enemies.each(e=>{ if (e.bbox.intersectsBox(player.bounds())){ gameOver(); } });
+      // Collisions (disabled during grace period)
+      if (grace<=0) {
+        enemies.each(e=>{ if (e.bbox.intersectsBox(player.bounds())){ gameOver(); } });
+      }
     }
 
     // Animate lines and particles always

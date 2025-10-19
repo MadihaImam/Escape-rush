@@ -8,7 +8,8 @@ window.GameState = (function(){
     removeAds: false,
     skin: 'red',
     sensitivity: 1.0,
-    showFps: false
+    showFps: false,
+    invertSteer: true
   };
   function load(){
     try { return { ...defaults, ...(JSON.parse(localStorage.getItem(KEY))||{}) }; }

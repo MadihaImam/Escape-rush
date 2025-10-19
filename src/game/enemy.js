@@ -32,18 +32,29 @@ window.EnemyPool = function(scene, playerXProvider, scoreProvider){
       e.police = true; policeActive++; AudioMgr.sirenStart();
     }
     e.speed = speed;
+    // reset push physics
+    e.pushVX = 0; e.pushVZ = 0;
     e.mesh.position.set(laneX, 0.5, zStart);
     e.bbox.setFromObject(e.mesh);
   }
   function update(dt){
     for (let i=active.length-1;i>=0;i--){
       const e = active[i];
-      e.mesh.position.z -= e.speed * dt;
-      // Police steer slightly toward player's x
+      // Base forward motion
+      let forward = e.speed;
+      // Police chase: slightly faster and avoid blocking by preferring lateral chase
       if (e.police && typeof playerXProvider === 'function'){
+        forward += 4;
         const px = playerXProvider();
         const dx = THREE.MathUtils.clamp(px - e.mesh.position.x, -1, 1);
-        e.mesh.position.x += dx * dt * 2.2; // lateral chase speed
+        e.mesh.position.x += dx * dt * 2.8; // stronger lateral chase
+      }
+      e.mesh.position.z -= forward * dt;
+      // Push physics when bumped
+      if (Math.abs(e.pushVX) > 0.01 || Math.abs(e.pushVZ) > 0.01){
+        e.mesh.position.x += e.pushVX * dt;
+        e.mesh.position.z += e.pushVZ * dt;
+        e.pushVX *= 0.92; e.pushVZ *= 0.9;
       }
       e.bbox.setFromObject(e.mesh);
       // Police lightbar blinking

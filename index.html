@@ -6,7 +6,7 @@
   <title>Escape Rush — Web</title>
   <meta name="theme-color" content="#0b0f14" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
   <div id="game-root">
@@ -28,6 +28,9 @@
       <div class="hud">
         <div id="hud-score">Score: 0</div>
         <div id="hud-highscore">Best: 0</div>
+        <div class="health" title="Car Health">
+          <div id="health-fill" class="health-fill" style="width:100%"></div>
+        </div>
       </div>
       <button id="btn-pause" class="icon">⏸</button>
       <div id="hud-fps" class="chip hidden">FPS: 0</div>
@@ -67,6 +70,10 @@
           <span>Sound Effects</span>
         </label>
         <label class="toggle">
+          <input type="checkbox" id="toggle-invert" />
+          <span>Invert Steering</span>
+        </label>
+        <label class="toggle">
           <input type="checkbox" id="toggle-fps" />
           <span>Show FPS</span>
         </label>
@@ -96,7 +103,7 @@
     </div>
 
     <!-- Mobile Controls -->
-    <div id="mobile-controls" class="controls hidden">
+    <div id="mobile-controls" class="controls">
       <button id="ctl-left" class="ctl">⟵</button>
       <button id="ctl-right" class="ctl">⟶</button>
       <button id="ctl-accel" class="ctl">▲</button>
@@ -106,19 +113,19 @@
   </div>
 
   <!-- Three.js CDN -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js?v=4"></script>
   <!-- Game scripts -->
-  <script src="src/game/utils.js"></script>
-  <script src="src/game/state.js"></script>
-  <script src="src/game/audio.js"></script>
-  <script src="src/game/monetization.js"></script>
-  <script src="src/game/road.js"></script>
-  <script src="src/game/player.js"></script>
-  <script src="src/game/models.js"></script>
-  <script src="src/game/enemy.js"></script>
-  <script src="src/game/scenery.js"></script>
-  <script src="src/game/ui.js"></script>
-  <script src="src/main.js"></script>
+  <script src="src/game/utils.js?v=4"></script>
+  <script src="src/game/state.js?v=4"></script>
+  <script src="src/game/audio.js?v=4"></script>
+  <script src="src/game/monetization.js?v=4"></script>
+  <script src="src/game/road.js?v=4"></script>
+  <script src="src/game/player.js?v=4"></script>
+  <script src="src/game/models.js?v=4"></script>
+  <script src="src/game/enemy.js?v=4"></script>
+  <script src="src/game/scenery.js?v=4"></script>
+  <script src="src/game/ui.js?v=4"></script>
+  <script src="src/main.js?v=4"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

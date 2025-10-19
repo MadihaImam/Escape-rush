@@ -10,6 +10,8 @@ html, body { height: 100%; margin: 0; background: #0b0f14; color: #e8f1f8; font-
 
 .panel { pointer-events: auto; background: rgba(10,14,20,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px 22px; min-width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
 .hud { pointer-events: none; background: rgba(10,14,20,0.55); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; }
+ .health { width: 160px; height: 10px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; overflow: hidden; margin-top: 6px; background: rgba(255,255,255,0.08); }
+ .health-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #84cc16); transition: width .2s ease; }
 
 h1, h2 { margin: 0 0 12px; letter-spacing: 0.5px; }
 .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
@@ -28,7 +30,7 @@ h1, h2 { margin: 0 0 12px; letter-spacing: 0.5px; }
  .slider { display: grid; gap: 6px; margin: 10px 0; }
 
 /* Mobile controls */
-.controls { position: absolute; left: 0; right: 0; bottom: env(safe-area-inset-bottom, 10px); display: flex; gap: 12px; justify-content: center; pointer-events: none; z-index: 20; }
+.controls { position: absolute; left: 0; right: 0; bottom: env(safe-area-inset-bottom, 10px); display: flex; gap: 12px; justify-content: center; pointer-events: none; z-index: 9999; }
 .controls.hidden { display: none; }
 .ctl { pointer-events: auto; width: 68px; height: 68px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.12); background: rgba(10,14,20,0.78); color: #e8f1f8; font-size: 24px; display: grid; place-items: center; box-shadow: 0 4px 16px rgba(0,0,0,0.35); touch-action: manipulation; }
 .ctl:active { transform: scale(0.98); }
