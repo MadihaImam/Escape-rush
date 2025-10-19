@@ -12,6 +12,8 @@ const ASSETS = [
   '/src/game/road.js',
   '/src/game/player.js',
   '/src/game/enemy.js',
+  '/src/game/models.js',
+  '/src/game/scenery.js',
   '/src/game/ui.js',
   'https://unpkg.com/three@0.160.0/build/three.min.js'
 ];

@@ -1,5 +1,5 @@
-// Enemy cars: pooled boxes advancing toward camera
-window.EnemyPool = function(scene){
+// Enemy cars: pooled boxes advancing toward camera, with optional police chase behavior
+window.EnemyPool = function(scene, playerXProvider, scoreProvider){
   const pool = [];
   const active = [];
   const colors = [0xffc107, 0x9b59b6, 0xf39c12, 0x16a085, 0xe67e22, 0x1abc9c];
@@ -20,6 +20,17 @@ window.EnemyPool = function(scene){
     const e = get();
     // If reusing from pool, ensure police state set
     if (e.police){ e.t = Math.random()*Math.PI; }
+    // Ensure we maintain desired number of police by score
+    const score = (typeof scoreProvider === 'function') ? scoreProvider() : 0;
+    const desiredPolice = Math.min(5, 1 + Math.floor(score/550));
+    if (policeActive < desiredPolice && !e.police){
+      // convert this car to police variant
+      while(e.mesh.children.length) e.mesh.remove(e.mesh.children[0]);
+      const rebuilt = Models.buildCar(0xffffff, true);
+      while(rebuilt.children.length) e.mesh.add(rebuilt.children[0]);
+      e.mesh.userData = rebuilt.userData;
+      e.police = true; policeActive++; AudioMgr.sirenStart();
+    }
     e.speed = speed;
     e.mesh.position.set(laneX, 0.5, zStart);
     e.bbox.setFromObject(e.mesh);
@@ -28,6 +39,12 @@ window.EnemyPool = function(scene){
     for (let i=active.length-1;i>=0;i--){
       const e = active[i];
       e.mesh.position.z -= e.speed * dt;
+      // Police steer slightly toward player's x
+      if (e.police && typeof playerXProvider === 'function'){
+        const px = playerXProvider();
+        const dx = THREE.MathUtils.clamp(px - e.mesh.position.x, -1, 1);
+        e.mesh.position.x += dx * dt * 2.2; // lateral chase speed
+      }
       e.bbox.setFromObject(e.mesh);
       // Police lightbar blinking
       if (e.police && e.mesh.userData.lightbar){

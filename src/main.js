@@ -5,6 +5,11 @@
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
   renderer.setClearColor(0x071018, 1);
+  // quality
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  renderer.shadowMap.enabled = true;
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x071018, 20, 140);
@@ -13,11 +18,11 @@
   camera.position.set(0, 18, -14);
   camera.lookAt(0, 0.5, 12);
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambient);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(3,10,-10); scene.add(dir);
+  const ambient = new THREE.AmbientLight(0xffffff, 0.5); scene.add(ambient);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(6,16,-12); dir.castShadow = true; dir.shadow.mapSize.set(1024,1024); dir.shadow.camera.near=1; dir.shadow.camera.far=80; scene.add(dir);
 
   const road = new Road(scene);
-  const enemies = new EnemyPool(scene);
+  const enemies = new EnemyPool(scene, ()=>player.mesh.position.x, ()=>score);
   let player = new Player(scene, GameState.state.skin);
   const scenery = new Scenery(scene);
 
@@ -100,6 +105,8 @@
     prev = Utils.now();
     scenery.reset();
     running = true; paused = false; AudioMgr.playMusic();
+    // spawn an initial wave so the road isn't empty after restart
+    for (let i=0;i<4;i++){ spawnEnemy(i*18); }
   }
   function restartGame(){ startGame(); }
   function endToMenu(){ running=false; paused=false; UI.hide(UI.overlays.hud); UI.hide(UI.overlays.pause); UI.show(UI.overlays.main); AudioMgr.stopMusic(); }
@@ -110,9 +117,9 @@
   function clearEnemies(){ enemies.clear(); }
 
   // Spawn enemies on lanes
-  function spawnEnemy(){
+  function spawnEnemy(zOffset=0){
     const lane = lanes[Math.floor(Math.random()*lanes.length)];
-    const zStart = player.getZ() + 80;
+    const zStart = player.getZ() + 80 + zOffset;
     const eSpeed = speed * Utils.randRange(0.9, 1.2);
     enemies.spawn(zStart, lane, eSpeed);
   }
