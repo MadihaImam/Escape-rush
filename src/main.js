@@ -107,7 +107,12 @@
     running = true; paused = false; AudioMgr.playMusic();
     UI.showControls();
     // spawn an initial wave so the road isn't empty after restart
-    for (let i=0;i<4;i++){ spawnEnemy(i*18); }
+    // Force 2 police and 3 regular cars spaced out
+    spawnEnemy(0, true);
+    spawnEnemy(18, true);
+    spawnEnemy(36, false);
+    spawnEnemy(54, false);
+    spawnEnemy(72, false);
   }
   function restartGame(){ startGame(); }
   function endToMenu(){ running=false; paused=false; UI.hide(UI.overlays.hud); UI.hide(UI.overlays.pause); UI.hideControls(); UI.show(UI.overlays.main); AudioMgr.stopMusic(); }
@@ -118,11 +123,11 @@
   function clearEnemies(){ enemies.clear(); }
 
   // Spawn enemies on lanes
-  function spawnEnemy(zOffset=0){
+  function spawnEnemy(zOffset=0, forcePolice=false){
     const lane = lanes[Math.floor(Math.random()*lanes.length)];
     const zStart = player.getZ() + 80 + zOffset;
     const eSpeed = speed * Utils.randRange(0.9, 1.2);
-    enemies.spawn(zStart, lane, eSpeed);
+    enemies.spawn(zStart, lane, eSpeed, forcePolice);
   }
 
   let prev = Utils.now();

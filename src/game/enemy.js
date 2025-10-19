@@ -16,14 +16,14 @@ window.EnemyPool = function(scene, playerXProvider, scoreProvider){
     }
     active.push(e); return e;
   }
-  function spawn(zStart, laneX, speed){
+  function spawn(zStart, laneX, speed, forcePolice=false){
     const e = get();
     // If reusing from pool, ensure police state set
     if (e.police){ e.t = Math.random()*Math.PI; }
     // Ensure we maintain desired number of police by score
     const score = (typeof scoreProvider === 'function') ? scoreProvider() : 0;
     const desiredPolice = Math.min(5, 1 + Math.floor(score/550));
-    if (policeActive < desiredPolice && !e.police){
+    if ((policeActive < desiredPolice || forcePolice) && !e.police){
       // convert this car to police variant
       while(e.mesh.children.length) e.mesh.remove(e.mesh.children[0]);
       const rebuilt = Models.buildCar(0xffffff, true);
