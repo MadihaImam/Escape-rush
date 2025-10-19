@@ -1,9 +1,9 @@
 // Player car: model with wheels + simple drift physics
-window.Player = function(scene, skin){
+window.Player = function(parent, skin){
   const colorMap = { red: 0xe74c3c, blue: 0x3498db, green: 0x2ecc71 };
   const car = Models.buildCar(colorMap[skin]||0xe74c3c, false);
   car.position.set(0, 0.5, 10);
-  scene.add(car);
+  parent.add(car);
   const bbox = new THREE.Box3().setFromObject(car);
   let vx = 0; // lateral velocity
   let ax = 0; // input acceleration

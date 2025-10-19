@@ -1,5 +1,5 @@
 // Road: two long tiles scrolling for infinite effect
-window.Road = function(scene){
+window.Road = function(parent){
   const tileLen = 80; // along Z
   const tileWidth = 20; // along X
   const tiles = [];
@@ -8,7 +8,7 @@ window.Road = function(scene){
     const geo = new THREE.BoxGeometry(tileWidth, 0.1, tileLen);
     const mesh = new THREE.Mesh(geo, mat);
     mesh.position.set(0, -0.1, i*tileLen);
-    scene.add(mesh);
+    parent.add(mesh);
     tiles.push(mesh);
   }
   const laneMarkers = [];
@@ -16,7 +16,7 @@ window.Road = function(scene){
   for (let i=-1;i<=1;i++){
     const points = [new THREE.Vector3(i*6.7,0,0), new THREE.Vector3(i*6.7,0,160)];
     const geo = new THREE.BufferGeometry().setFromPoints(points);
-    const line = new THREE.Line(geo, laneMat); line.position.y=0.05; scene.add(line); laneMarkers.push(line);
+    const line = new THREE.Line(geo, laneMat); line.position.y=0.05; parent.add(line); laneMarkers.push(line);
   }
   function update(speed){
     tiles.forEach(t=>{ t.position.z -= speed; });

@@ -13,6 +13,9 @@
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x071018, 20, 140);
+  // World group holds road, scenery, player, and enemies so we can transform as a whole
+  const world = new THREE.Group();
+  scene.add(world);
 
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 500);
   camera.position.set(0, 18, -14);
@@ -21,13 +24,22 @@
   const ambient = new THREE.AmbientLight(0xffffff, 0.5); scene.add(ambient);
   const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(6,16,-12); dir.castShadow = true; dir.shadow.mapSize.set(1024,1024); dir.shadow.camera.near=1; dir.shadow.camera.far=80; scene.add(dir);
 
-  const road = new Road(scene);
-  const enemies = new EnemyPool(scene, ()=>player.mesh.position.x, ()=>score);
-  let player = new Player(scene, GameState.state.skin);
-  const scenery = new Scenery(scene);
+  const road = new Road(world);
+  const enemies = new EnemyPool(world, ()=>player.mesh.position.x, ()=>score);
+  let player = new Player(world, GameState.state.skin);
+  const scenery = new Scenery(world);
 
   const lanes = [-6.7, 0, 6.7];
   const boundsX = 9.2;
+  // World turning
+  let turnTargetY = 0;
+  let turning = false;
+  function requestTurn(dir){ // dir: -1 left, +1 right
+    if (turning) return;
+    turning = true;
+    turnTargetY = world.rotation.y + (dir<0 ? -Math.PI/2 : Math.PI/2);
+    scenery.nextTheme();
+  }
 
   // Input handling: drag/swipe
   let dragging=false, lastX=0;
@@ -67,6 +79,7 @@
   let spawnTimer = 0;
   let spawnInterval = 1.2;
   let fpsSMA = 60;
+  let postSpawnTimer = -1; // spawn extra wave after restart
 
   UI.setBest(best);
   UI.syncSettings();
@@ -113,6 +126,7 @@
     spawnEnemy(36, false);
     spawnEnemy(54, false);
     spawnEnemy(72, false);
+    postSpawnTimer = 2.0;
   }
   function restartGame(){ startGame(); }
   function endToMenu(){ running=false; paused=false; UI.hide(UI.overlays.hud); UI.hide(UI.overlays.pause); UI.hideControls(); UI.show(UI.overlays.main); AudioMgr.stopMusic(); }
@@ -177,6 +191,12 @@
       enemies.update(dt);
       player.update(dt);
 
+      // Handle world turning animation
+      if (turning){
+        world.rotation.y = THREE.MathUtils.lerp(world.rotation.y, turnTargetY, 0.08);
+        if (Math.abs(world.rotation.y - turnTargetY) < 0.01){ world.rotation.y = turnTargetY; turning=false; }
+      }
+
       // Clamp player to road
       player.setX(Utils.clamp(player.mesh.position.x, -9.2, 9.2));
 
@@ -186,6 +206,12 @@
 
       // Drift toggle
       player.setDrift(!!ctl.drift);
+
+      // Turn combo: hold drift and tap left/right triggers a world turn
+      if (ctl.drift && (ctl.left || ctl.right)){
+        if (ctl.left) { requestTurn(-1); }
+        else if (ctl.right) { requestTurn(1); }
+      }
 
       // Accel/Brake affect speed
       if (ctl.accel) speed = Math.min(65, speed + 30*dt);
@@ -197,6 +223,11 @@
 
       // Spawning
       spawnTimer -= dt; if (spawnTimer<=0){ spawnEnemy(); spawnTimer = spawnInterval; }
+      if (postSpawnTimer>0){ postSpawnTimer -= dt; if (postSpawnTimer<=0){
+        // extra density wave
+        spawnEnemy(0, false); spawnEnemy(12, false); spawnEnemy(24, true);
+        postSpawnTimer = -1;
+      }}
 
       // Collisions
       enemies.each(e=>{ if (e.bbox.intersectsBox(player.bounds())){ gameOver(); } });

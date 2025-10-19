@@ -1,6 +1,6 @@
 // Scenery manager: trees, grass, playground with swing (kids)
-window.Scenery = function(scene){
-  const group = new THREE.Group(); scene.add(group);
+window.Scenery = function(parent){
+  const group = new THREE.Group(); parent.add(group);
   const items = [];
   const lenZ = 160;
 
@@ -11,6 +11,20 @@ window.Scenery = function(scene){
   const swingMat = new THREE.MeshLambertMaterial({ color: 0xcccccc });
   const kidBodyMat = new THREE.MeshLambertMaterial({ color: 0xffcba4 });
   const kidClothMat = new THREE.MeshLambertMaterial({ color: 0x3477eb });
+
+  const themes = [
+    { name:'urban', grass:0x0a3a1a, leaf:0x1f7a3b },
+    { name:'park', grass:0x0f4d22, leaf:0x2aa74a },
+    { name:'residential', grass:0x155e2b, leaf:0x38c172 },
+    { name:'downtown', grass:0x0a2a3a, leaf:0x1a6a8a }
+  ];
+  let themeIndex = 0;
+  function applyTheme(){
+    const t = themes[themeIndex % themes.length];
+    grassMat.color.setHex(t.grass);
+    leafMat.color.setHex(t.leaf);
+  }
+  applyTheme();
 
   // Grass strips
   const grassLeft = new THREE.Mesh(new THREE.BoxGeometry(8,0.1,lenZ), grassMat); grassLeft.position.set(-18, -0.05, lenZ/2); group.add(grassLeft);
@@ -63,6 +77,8 @@ window.Scenery = function(scene){
     }
   }
   function reset(){ group.position.z = 0; }
+  function nextTheme(){ themeIndex = (themeIndex + 1) % themes.length; applyTheme(); }
+  function setThemeIndex(i){ themeIndex = ((i%themes.length)+themes.length)%themes.length; applyTheme(); }
 
-  return { update, reset };
+  return { update, reset, nextTheme, setThemeIndex };
 }
