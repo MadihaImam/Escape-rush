@@ -105,14 +105,15 @@
     prev = Utils.now();
     scenery.reset();
     running = true; paused = false; AudioMgr.playMusic();
+    UI.showControls();
     // spawn an initial wave so the road isn't empty after restart
     for (let i=0;i<4;i++){ spawnEnemy(i*18); }
   }
   function restartGame(){ startGame(); }
-  function endToMenu(){ running=false; paused=false; UI.hide(UI.overlays.hud); UI.hide(UI.overlays.pause); UI.show(UI.overlays.main); AudioMgr.stopMusic(); }
+  function endToMenu(){ running=false; paused=false; UI.hide(UI.overlays.hud); UI.hide(UI.overlays.pause); UI.hideControls(); UI.show(UI.overlays.main); AudioMgr.stopMusic(); }
   function gameOver(){
     spawnExplosion(player.mesh.position.clone());
-    running=false; paused=false; UI.setFinal(score); UI.hide(UI.overlays.hud); UI.show(UI.overlays.gameover); AudioMgr.stopMusic(); AudioMgr.crash(); if (score>best){ best=score; GameState.set('highScore', Math.floor(best)); UI.setBest(best); }
+    running=false; paused=false; UI.setFinal(score); UI.hide(UI.overlays.hud); UI.hideControls(); UI.show(UI.overlays.gameover); AudioMgr.stopMusic(); AudioMgr.crash(); if (score>best){ best=score; GameState.set('highScore', Math.floor(best)); UI.setBest(best); }
   }
   function clearEnemies(){ enemies.clear(); }
 
@@ -163,7 +164,7 @@
 
     if (running && !paused){
       // Difficulty ramp
-      speed = Math.min(48, speed + dt*0.8);
+      speed = Math.min(60, speed + dt*0.8);
       spawnInterval = Math.max(0.45, spawnInterval - dt*0.06);
 
       road.update(speed*dt);
@@ -174,9 +175,16 @@
       // Clamp player to road
       player.setX(Utils.clamp(player.mesh.position.x, -9.2, 9.2));
 
-      // Keyboard movement
-      const kx = (keys.left?-1:0) + (keys.right?1:0);
+      // Keyboard + mobile button movement
+      const kx = (keys.left?-1:0) + (keys.right?1:0) + (ctl.left?-1:0) + (ctl.right?1:0);
       if (kx !== 0) player.setSpeedX(10*kx*UI.getSensitivity()); else if(!dragging) player.setSpeedX(0);
+
+      // Drift toggle
+      player.setDrift(!!ctl.drift);
+
+      // Accel/Brake affect speed
+      if (ctl.accel) speed = Math.min(65, speed + 30*dt);
+      if (ctl.brake) speed = Math.max(12, speed - 40*dt);
 
       // Scoring
       score += dt * speed * 0.5;
@@ -212,4 +220,29 @@
   // Scenery replaces previous simple buildings
 
   requestAnimationFrame(tick);
+
+  // Mobile controls wiring
+  const ctl = { left:false, right:false, accel:false, brake:false, drift:false };
+  function bindHold(el, key){
+    const onDown = (e)=>{ e.preventDefault(); ctl[key]=true; };
+    const onUp = (e)=>{ e.preventDefault(); ctl[key]=false; };
+    el.addEventListener('pointerdown', onDown);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointerleave', onUp);
+    el.addEventListener('touchstart', onDown, {passive:false});
+    el.addEventListener('touchend', onUp);
+  }
+  bindHold(UI.ctl.left, 'left');
+  bindHold(UI.ctl.right, 'right');
+  bindHold(UI.ctl.accel, 'accel');
+  bindHold(UI.ctl.brake, 'brake');
+  bindHold(UI.ctl.drift, 'drift');
+  // Hide controls when paused
+  UI.btn.pause.addEventListener('click', ()=> UI.hideControls());
+  UI.btn.resume.addEventListener('click', ()=> UI.showControls());
+  UI.btn.settings.addEventListener('click', ()=> UI.hideControls());
+  UI.btn.shop.addEventListener('click', ()=> UI.hideControls());
+  UI.btn.settingsBack.addEventListener('click', ()=> UI.showControls());
+  UI.btn.shopBack.addEventListener('click', ()=> UI.showControls());
+
 })();

@@ -8,12 +8,15 @@ window.Player = function(scene, skin){
   let vx = 0; // lateral velocity
   let ax = 0; // input acceleration
   let yaw = 0;
+  let drift = false;
 
   function setSkin(s){ const col = colorMap[s]||0xe74c3c; car.traverse(n=>{ if(n.material && n.material.color){ n.material.color.setHex(col); } }); }
   function update(dt){
     // simple drift physics: integrate lateral velocity with damping
-    vx += ax * dt;
-    vx *= 0.9; // friction
+    const gain = drift ? 1.7 : 1.0;
+    const damp = drift ? 0.97 : 0.9;
+    vx += (ax * gain) * dt;
+    vx *= damp; // friction
     car.position.x += vx * dt;
     // visual yaw/tilt
     yaw = THREE.MathUtils.lerp(yaw, -vx*0.03, 0.2);
@@ -32,5 +35,6 @@ window.Player = function(scene, skin){
   function bounds(){ return bbox; }
   function setSpeedX(v){ ax = v; }
   function getZ(){ return car.position.z; }
-  return { mesh: car, update, setX, bounds, setSpeedX, getZ, setSkin };
+  function setDrift(v){ drift = !!v; }
+  return { mesh: car, update, setX, bounds, setSpeedX, getZ, setSkin, setDrift };
 }

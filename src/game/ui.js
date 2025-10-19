@@ -37,5 +37,18 @@ window.UI = (function(){
   function setFpsVisible(v){ if (v) hudFps.classList.remove('hidden'); else hudFps.classList.add('hidden'); }
   function getSensitivity(){ return parseFloat(rangeSens.value || '1'); }
 
-  return { $, show, hide, overlays, btn, setScore, setBest, setFinal, setFps, setFpsVisible, getSensitivity, toggleMusic, toggleSfx, toggleFps, rangeSens, syncSettings, hudFps };
+  // Mobile controls
+  const mobileControls = document.getElementById('mobile-controls');
+  const ctl = {
+    left: document.getElementById('ctl-left'),
+    right: document.getElementById('ctl-right'),
+    accel: document.getElementById('ctl-accel'),
+    brake: document.getElementById('ctl-brake'),
+    drift: document.getElementById('ctl-drift'),
+  };
+
+  function showControls(){ mobileControls.classList.remove('hidden'); }
+  function hideControls(){ mobileControls.classList.add('hidden'); }
+
+  return { $, show, hide, overlays, btn, setScore, setBest, setFinal, setFps, setFpsVisible, getSensitivity, toggleMusic, toggleSfx, toggleFps, rangeSens, syncSettings, hudFps, ctl, showControls, hideControls };
 })();
